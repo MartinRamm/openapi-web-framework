@@ -1,0 +1,36 @@
+{
+  "name": "openapi-web-framework",
+  "version": "0.0.0",
+  "description": "An opinionated web framework based on Typescript and OpenAPI",
+  "keywords": [
+    "web",
+    "framework",
+    "middleware",
+    "http",
+    "https",
+    "rest",
+    "restful",
+    "router",
+    "api",
+    "OpenAPI",
+    "OAS",
+    "Swagger",
+    "schema",
+    "typescript",
+    "ts"
+  ],
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MartinRamm/openapi-web-framework.git"
+  },
+  "author": "MartinRamm <https://github.com/MartinRamm>",
+  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/MartinRamm/openapi-web-framework/issues"
+  },
+  "homepage": "https://github.com/MartinRamm/openapi-web-framework#readme"
+}
