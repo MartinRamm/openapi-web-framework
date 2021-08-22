@@ -1,7 +1,7 @@
 {
-  "name": "openapi-web-framework",
+  "name": "owf",
   "version": "0.0.0",
-  "description": "An opinionated web framework based on Typescript and OpenAPI",
+  "description": "OpenAPI Web Framework (OWF): An opinionated web framework based on Typescript and OpenAPI",
   "keywords": [
     "web",
     "framework",
