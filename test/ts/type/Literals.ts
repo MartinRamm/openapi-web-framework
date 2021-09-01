@@ -51,10 +51,3 @@ expectTypeOf<IsNumericLiteral<keyof Record<1, any>>>().toEqualTypeOf<true>();
 expectTypeOf<IsNumericLiteral<keyof Record<1 | 2, any>>>().toEqualTypeOf<true>();
 expectTypeOf<IsNumericLiteral<keyof { a: true }>>().toEqualTypeOf<false>();
 expectTypeOf<IsNumericLiteral<number>>().toEqualTypeOf<false>();
-
-const x = 'asdf';
-const t = {
-  asdf: {
-    [`/f/${x}`]: true
-  }
-}
