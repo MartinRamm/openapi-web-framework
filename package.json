@@ -25,7 +25,9 @@
     "lint": "npm run _base-lint -- ./",
     "lint-fix": "npm run lint -- --fix",
     "test": "npm run _test-ts && npm run _test-unit",
-    "_test-ts": "./node_modules/.bin/tsc --build ./tsconfig-test.json",
+    "_test-ts": "npm run _test-ts-build && npm run _test-ts-exec",
+    "_test-ts-build": "find ./test/ts -name '*.js' -not -name '.eslintrc.js' -exec bash -c 'node \"$0\" > $(echo \"$0\" | sed \"s/js$/generated.ts/\")' {} +;",
+    "_test-ts-exec": "./node_modules/.bin/tsc --build ./tsconfig-test.json",
     "_test-unit": "./node_modules/.bin/jest",
     "build": "rm -rf dist/ && ./node_modules/.bin/tsc --build ./tsconfig.json && ./node_modules/.bin/tsc-alias -p tsconfig.json"
   },

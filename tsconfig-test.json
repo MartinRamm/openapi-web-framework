@@ -6,5 +6,5 @@
     "noUnusedParameters": false,
     "declaration": true
   },
-  "include": ["test/ts/**/*.ts"]
+  "include": ["test/ts/**/*.ts", "test/unit/**/*.ts"]
 }
