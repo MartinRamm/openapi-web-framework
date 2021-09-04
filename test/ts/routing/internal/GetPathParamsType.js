@@ -1,4 +1,4 @@
-const testCases = require('../../../shared/web/routing/internal/getPathParamsTestCases');
+const { pathParamsTestCases } = require('../../../shared/web/routing/internal/pathParamsTestCases');
 
 console.log(`import { expectTypeOf } from 'expect-type';
 import { GetPathParamsType } from 'src/web/routing/internal/GetPathParamsType';
@@ -9,7 +9,7 @@ expectTypeOf<GetPathParamsType<1>>();
 expectTypeOf<GetPathParamsType<object>>(); // eslint-disable-line @typescript-eslint/ban-types
 `);
 
-Object.entries(testCases).forEach(([name, tests]) => {
+Object.entries(pathParamsTestCases).forEach(([name, tests]) => {
   console.log(`// ${name}`);
   tests.forEach(({subName, input, expected}) => {
     let expectedType = expected.length === 0 ? `never` : `'${expected.join("' | '")}'`;

@@ -88,4 +88,4 @@ addTestCaseWithExtraParams('param name containing escaped { and } with prefix', 
 addTestCaseWithExtraParams('param name containing escaped { and } with postfix', '{\\{as\\}z}', ['{as}z'])
 addTestCaseWithExtraParams('param name containing escaped { and } with pre- and postfix', '{z\\{as\\}z}', ['z{as}z'])
 
-module.exports = testCases;
+module.exports = { pathParamsTestCases: testCases};
