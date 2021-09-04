@@ -1,5 +1,5 @@
 import { expectTypeOf } from 'expect-type';
-import { GetPathParams } from '../../../../src/web/routing/internal/GetPathParams';
+import { GetPathParams } from 'src/web/routing/internal/GetPathParams';
 
 // @ts-expect-error
 expectTypeOf<GetPathParams<1>>();

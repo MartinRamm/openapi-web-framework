@@ -1,5 +1,5 @@
 import { expectTypeOf } from 'expect-type';
-import { Either } from '../../../src/fp/Either';
+import { Either } from 'src/fp/Either';
 
 const left = 'left';
 const right = 123;

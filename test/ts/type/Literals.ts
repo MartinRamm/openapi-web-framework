@@ -1,8 +1,8 @@
 import { expectTypeOf } from 'expect-type';
-import { StringLiteral } from '../../../src/types/literals/StringLiteral';
-import { IsStringLiteral } from '../../../src/types/literals/IsStringLiteral';
-import { NumericLiteral } from '../../../src/types/literals/NumericLiteral';
-import { IsNumericLiteral } from '../../../src/types/literals/IsNumericLiteral';
+import { StringLiteral } from 'src/types/literals/StringLiteral';
+import { IsStringLiteral } from 'src/types/literals/IsStringLiteral';
+import { NumericLiteral } from 'src/types/literals/NumericLiteral';
+import { IsNumericLiteral } from 'src/types/literals/IsNumericLiteral';
 
 expectTypeOf<StringLiteral<'a'>>().toMatchTypeOf<string>();
 expectTypeOf<StringLiteral<'a'>>().toEqualTypeOf<'a'>();
