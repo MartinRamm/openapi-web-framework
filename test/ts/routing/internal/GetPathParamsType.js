@@ -11,8 +11,8 @@ expectTypeOf<GetPathParamsType<object>>(); // eslint-disable-line @typescript-es
 
 Object.entries(pathParamsTestCases).forEach(([name, tests]) => {
   console.log(`// ${name}`);
-  tests.forEach(({subName, input, expected}) => {
-    let expectedType = expected.length === 0 ? `never` : `'${expected.join("' | '")}'`;
+  tests.forEach(({ subName, input, expected }) => {
+    let expectedType = expected.length === 0 ? 'never' : `'${expected.join("' | '")}'`;
     input = input.replace(/\\/g, '\\\\');
     console.log(`expectTypeOf<GetPathParamsType<'${input}'>>().toEqualTypeOf<${expectedType}>(); // ${subName}`);
   });
