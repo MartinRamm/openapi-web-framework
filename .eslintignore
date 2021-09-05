@@ -1,0 +1,8 @@
+.eslintrc.js
+jest.config.js
+
+node_modules/
+dist/
+
+#Generated Files
+test/ts/**/*.generated.ts

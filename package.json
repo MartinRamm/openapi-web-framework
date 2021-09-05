@@ -21,7 +21,7 @@
   ],
   "main": "index.js",
   "scripts": {
-    "_base-lint": "eslint --max-warnings 0 --ext .ts",
+    "_base-lint": "eslint --max-warnings 0 --ext '.ts,.js'",
     "lint": "npm run _base-lint -- ./",
     "lint-fix": "npm run lint -- --fix",
     "test": "npm run _test-ts && npm run _test-unit",

@@ -62,7 +62,7 @@ module.exports = {
     //ts-immutable
     "ts-immutable/no-throw": 'error',
     "ts-immutable/no-reject": 'error',
-    "ts-immutable/immutable-data": 'error',
+    "ts-immutable/immutable-data": ['error', {'ignoreAccessorPattern': 'module'}], //allow setting `module.exports`
 
     "folders/match-regex": [2, "^[a-z][a-z-]+$", '/src/'],
 
@@ -115,5 +115,16 @@ module.exports = {
         "trailingUnderscore": 'forbid',
       }
     ]
-  }
+  },
+  overrides: [
+    {
+      "files": ["*.js"],
+      "rules": {
+        "@typescript-eslint/no-var-requires": "off",
+        "@typescript-eslint/no-unsafe-assignment": "off",
+        "@typescript-eslint/restrict-template-expressions": "off",
+        "@typescript-eslint/no-unsafe-member-access": "off",
+      }
+    }
+  ],
 }
