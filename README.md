@@ -15,7 +15,7 @@ the author, this framework is for you:
 * The requests and responses delivered from an API should be fully typed. This includes errors.
 * The API should be flexible in the data-formats it supports (JSON, XML, YAML, FORMDATA, PROTOBUF, etc.). The consumer
   of the API should specify what formats it wants. The framework should handle this.
-* Data input should be validated by the framework against the specification before being handled.
+* Data input should be validated by the framework against the specification.
 * The representation of the data in the runtime environment (character encoding, number precision, etc.) must be taken
   into account by the framework during parsing/serialization operations.
 
