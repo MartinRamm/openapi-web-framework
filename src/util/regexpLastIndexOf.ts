@@ -1,14 +1,12 @@
-const recursive = (search: string, regexp: RegExp, lastResult: number): number => {
-  const result = search.search(regexp);
+const recursive = (searchString: string, regexp: RegExp, lastResult: number): number => {
+  const result = searchString.search(regexp);
   if (result < 0) {
     return lastResult;
   }
 
-  search = search.substr(result + 1);
-  if (lastResult < 0) {
-    return recursive(search, regexp, result);
-  }
-  return recursive(search, regexp, lastResult + result + 1);
+  const newSearchString = searchString.substr(result + 1);
+  const newLastResult = lastResult + result + 1;
+  return recursive(newSearchString, regexp, newLastResult);
 };
 
-export const regexLastIndexOf = (search: string, regexp: RegExp) => recursive(search, regexp, -1);
+export const regexLastIndexOf = (searchString: string, regexp: RegExp) => recursive(searchString, regexp, -1);
