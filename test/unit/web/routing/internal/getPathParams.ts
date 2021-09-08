@@ -1,6 +1,6 @@
 import { describe, expect, test } from '@jest/globals';
 import { getPathParams } from 'src/web/routing/internal/getPathParams';
-import { pathParamsTestCases } from '../../../../shared/web/routing/internal/pathParamsTestCases';
+import { pathParamsTestCases } from 'test/shared/web/routing/internal/pathParamsTestCases';
 
 describe('getPathParams', () => {
   Object.entries(pathParamsTestCases).forEach(([name, tests]) => {

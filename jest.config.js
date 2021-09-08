@@ -5,6 +5,7 @@ module.exports = {
   testMatch: ['**/*.ts'],
   moduleNameMapper: {
     '^src/(.*)$': '<rootDir>/src/$1',
+    '^test/(.*)$': '<rootDir>/test/$1',
   },
   preset: 'ts-jest',
 };

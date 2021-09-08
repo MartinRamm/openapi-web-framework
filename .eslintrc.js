@@ -58,6 +58,7 @@ module.exports = {
     'folders/match-regex': [2, '^[a-z][a-z-]+$', '/src/'],
 
     'import/no-default-export': 2,
+    'import/no-relative-parent-imports': 'error',
 
     'filenames/match-exported': 2,
 

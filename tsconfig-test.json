@@ -4,7 +4,10 @@
     "noEmit": true,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-    "declaration": true
+    "declaration": true,
+    "paths": {
+      "test/*": ["./test/*"]
+    }
   },
   "include": ["test/**/*.ts", "test/**/*.js", "test/**/.*.js", "*.js", "*.js", ".*.js"]
 }
