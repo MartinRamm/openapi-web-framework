@@ -6,5 +6,5 @@
     "noUnusedParameters": false,
     "declaration": true
   },
-  "include": ["test/**/*.ts", "test/**/*.js"]
+  "include": ["test/**/*.ts", "test/**/*.js", "test/**/.*.js", "*.js", "*.js", ".*.js"]
 }
