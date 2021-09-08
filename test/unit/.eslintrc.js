@@ -1,8 +1,6 @@
 module.exports = {
   root: false,
-  extends: [
-    'plugin:jest/all'
-  ],
+  extends: ['plugin:jest/all'],
 
   rules: {
     'jest/valid-title': 'off',
@@ -10,14 +8,17 @@ module.exports = {
     'jest/consistent-test-it': [
       'error',
       {
-        'fn': 'test',
-        'withinDescribe': 'test'
-      }
+        fn: 'test',
+        withinDescribe: 'test',
+      },
     ],
-    'no-restricted-properties': ['error', {
-      'object': 'test',
-      'property': 'each',
-      'message': 'Please use `[...].forEach((each) => { test(...) });` instead, as `test.each` is not typed.'
-    }]
-  }
-}
+    'no-restricted-properties': [
+      'error',
+      {
+        object: 'test',
+        property: 'each',
+        message: 'Please use `[...].forEach((each) => { test(...) });` instead, as `test.each` is not typed.',
+      },
+    ],
+  },
+};
