@@ -1,0 +1,1 @@
+export const regExpNonEscapedRightBracket = /(?<!\\)}/g;

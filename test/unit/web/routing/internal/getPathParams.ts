@@ -5,10 +5,10 @@ import { pathParamsTestCases } from 'test/shared/web/routing/internal/pathParams
 describe('getPathParams', () => {
   Object.entries(pathParamsTestCases).forEach(([name, tests]) => {
     describe(name, () => {
-      tests.forEach(({ subName, input, expected }) => {
-        test(`${subName}: getPathParams('${input}')`, () => {
+      tests.forEach(({ subName, input, expectedParams }) => {
+        test(`${subName}: getPathParams('${input.replace(/\\/g, '\\\\')}')`, () => {
           const actual = getPathParams(input);
-          expect(actual).toStrictEqual(expected);
+          expect(actual).toStrictEqual(expectedParams);
         });
       });
     });

@@ -4,22 +4,20 @@ export const types = {
   string: {
     //metadata: minLength, maxLength
     any: {},
-    date: {},
-    dateTime: {},
-    time: {},
-    duration: {},
     password: {},
+    enum: {}, //no metadata
+    pattern: {},
+    date: {}, //no metadata
+    dateTime: {}, //no metadata
+    time: {}, //no metadata
+    duration: {}, //no metadata
     base64Encoded: {},
     binary: {},
     email: {},
-    idnEmail: {},
-    uuid: {},
+    uuid: {}, //no metadata
     uri: {},
-    uriReference: {},
-    uriTemplate: {},
-    hostname: {},
-    ipv4: {},
-    ipv6: {},
+    ipv4: {}, //no metadata
+    ipv6: {}, //no metadata
     jsonPointer: {},
     relativeJsonPointer: {},
     relativeJsonPointerOfSchema: {}, //checks that json pointer fits to a schema
@@ -27,14 +25,26 @@ export const types = {
   number: {
     //metadata: minimum, maximum, exclusiveMinimum, exclusiveMaximum, multipleOf
     any: {},
+    preciseInteger: {},
+    preciseDecimal: {},
     float: {},
     double: {},
     integer: {},
     int32: {},
-    long: {},
+    int64: {},
   },
   boolean: {},
   array: {}, // metadata: minItems, maxItems, uniqueItems
-  untypedObject: {}, //metadata: minProperties, maxProperties
+  object: {
+    //metadata: minProperties, maxProperties, additionalProperties
+    any: {},
+    typed: {},
+    allOf: {},
+    anyOf: {},
+    oneOf: {},
+  },
   any: {},
+  oneOf: {}, //metadata: discriminator (https://swagger.io/docs/specification/data-models/inheritance-and-polymorphism/)
+  not: {},
+  asNullable: {},
 };

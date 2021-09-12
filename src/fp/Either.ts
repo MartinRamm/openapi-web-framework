@@ -29,9 +29,9 @@ export abstract class Either<Left, Right> {
     return new EitherRight(value);
   }
 
-  protected abstract isLeft(): this is { value: Left };
+  public abstract isLeft(): this is { value: Left };
 
-  protected isRight(): this is { value: Right } {
+  public isRight(): this is { value: Right } {
     return !this.isLeft();
   }
 
@@ -70,7 +70,7 @@ class EitherLeft<Left, Right> extends Either<Left, Right> {
    * @inheritDoc
    * @override
    */
-  protected isLeft(): this is { value: Left } {
+  public isLeft(): this is { value: Left } {
     return true;
   }
 }
@@ -84,7 +84,7 @@ class EitherRight<Left, Right> extends Either<Left, Right> {
    * @inheritDoc
    * @override
    */
-  protected isLeft(): this is { value: Left } {
+  public isLeft(): this is { value: Left } {
     return false;
   }
 }

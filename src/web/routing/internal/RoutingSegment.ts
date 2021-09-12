@@ -1,6 +1,5 @@
-/* eslint-disable ts-immutable/immutable-data */
+/* eslint "ts-immutable/immutable-data": [ "error", { "ignorePattern": "this" } ] */
 
-import { Handler } from 'src/web/Handler';
 import { Either } from 'src/fp/Either';
 import { NoRouteFoundException } from 'src/errors/routing/NoRouteFoundException';
 import { MethodNotAllowedException } from 'src/errors/routing/MethodNotAllowedException';
@@ -8,9 +7,17 @@ import { MalformedPathException } from 'src/errors/routing/MalformedPathExceptio
 import { DuplicateRouteException } from 'src/errors/routing/DuplicateRouteException';
 import { ParseRouteSegmentData } from 'src/web/routing/internal/ParseRouteSegmentData';
 import { ParseRouteReturnType } from 'src/web/routing/internal/ParseRouteReturnType';
+import { RoutingOptions } from 'src/web/routing/RoutingOptions';
+import { GenericRoute } from 'src/web/routing/Route';
+import { regexLastIndexOf } from 'src/util/regexpLastIndexOf';
+import { regExpNonEscapedLeftBracket } from 'src/web/routing/internal/regExpNonEscapedLeftBracket';
+import { regExpNonEscapedRightBracket } from 'src/web/routing/internal/regExpNonEscapedRightBracket';
+import { InvalidParamException, UnmatchedParamTypes } from 'src/errors/routing/InvalidParamException';
+import { MultipleRoutesMatchException } from 'src/errors/routing/MultipleRoutesMatchException';
+import { TypeValidationException } from 'src/errors/TypeValidationException';
 
-type HandlersMap = {
-  [method: string]: Handler;
+type MethodMap = {
+  [method: string]: GenericRoute[];
 };
 
 type RoutingTable = {
@@ -35,28 +42,30 @@ type ParamRoutingTable = {
  *        * param without any pre/postfixes, e.g.: `{param}`
  */
 export class RoutingSegment {
-  private handlers: HandlersMap = {};
+  protected methodMap: MethodMap = {};
 
-  private literalPathsTable: RoutingTable = {};
-  private literalPathsKeysSorted: string[] = [];
+  protected literalPathsTable: RoutingTable = {};
+  protected literalPathsKeysSorted: string[] = [];
 
-  private paramsPathsTable: ParamRoutingTable = {};
-  private paramsPathsPrefixKeysSorted: string[] = [];
-  private paramsPathsPostfixKeysSorted: Record<string, string[]> = {};
+  protected paramsPathsTable: ParamRoutingTable = {};
+  protected paramsPathsPrefixKeysSorted: string[] = [];
+  protected paramsPathsPostfixKeysSorted: Record<string, string[]> = {};
 
-  private keysExtracted = true;
+  protected keysExtracted = true;
+
+  constructor(protected readonly options: RoutingOptions) {}
 
   /**
    * Prepare the `this.*KeysSorted` variables.
    */
-  private extractKeys() {
+  protected extractKeys() {
     if (this.keysExtracted) {
       return;
     }
     this.keysExtracted = true;
 
     const getObjectKeysSorted = (object: Record<string, unknown>) =>
-      Object.keys(object).sort((a, b) => b.length - a.length);
+      Object.keys(object).sort((a, b) => b.length - a.length); //eslint-disable-line ts-immutable/immutable-data
 
     this.literalPathsKeysSorted = getObjectKeysSorted(this.literalPathsTable);
 
@@ -74,18 +83,90 @@ export class RoutingSegment {
     this.extractKeys();
 
     if (data.pathSegmentIndex >= data.pathSegments.length) {
-      if (Object.keys(this.handlers).length === 0) {
+      if (Object.keys(this.methodMap).length === 0) {
         return Either.Left(new NoRouteFoundException());
       }
 
-      if (this.handlers[data.method] === undefined) {
-        return Either.Left(new MethodNotAllowedException(data.method, Object.keys(this.handlers)));
+      if (this.methodMap[data.method] === undefined || this.methodMap[data.method].length === 0) {
+        return Either.Left(new MethodNotAllowedException(data.method, Object.keys(this.methodMap)));
       }
-      return Either.Right(this.handlers[data.method]);
+
+      let routesToCheck = this.methodMap[data.method];
+
+      let errors: UnmatchedParamTypes = [];
+      for (let i = 0; i < data.pathVariables.length; i++) {
+        const variableValue = data.pathVariables[i];
+
+        for (const route of routesToCheck) {
+          const pathParamName = route.pathParams[i];
+          const type = route.pathParamTypes[pathParamName];
+          const validationResult = type.validateValue(variableValue);
+
+          if (validationResult.isLeft()) {
+            errors = [
+              ...errors,
+              { route, paramErrors: {[pathParamName]: validationResult.value}}
+            ];
+            routesToCheck = routesToCheck.filter(r => r !== route);
+          }
+        }
+        if (routesToCheck.length === 0) {
+          return Either.Left(new InvalidParamException('path', data.rawPath, variableValue, errors));
+        } else {
+          errors = [];
+        }
+      }
+
+      if (routesToCheck.length === 1) {
+        return Either.Right(routesToCheck[0]);
+      }
+
+      type ParamValidator<T extends string> = ['query' | 'headers' | 'cookies' | 'body', Record<T, string>, (r: GenericRoute) => Partial<Record<T, TypeValidationException>>];
+      const paramValidators: Array<ParamValidator<string>> = [
+        ['query', data.query, (r: GenericRoute) => r.queryMatchErrors(data.query)],
+        ['headers', data.headers, (r: GenericRoute) => r.headersMatchErrors(data.headers)],
+        ['cookies', data.cookies, (r: GenericRoute) => r.cookiesMatchErrors(data.cookies)],
+        ['body', {body: data.rawBody}, (r: GenericRoute) => {
+          if (r.requiresBody && data.rawBody === '') {
+            return {body: new TypeValidationException('body', 'non-empty string')};
+          } else if (!r.requiresBody && data.rawBody !== '') {
+            return {body: new TypeValidationException('body', 'empty')};
+          }
+          return {};
+        } ],
+      ];
+      const hasErrors = (validationResult: Partial<Record<string, TypeValidationException>>): validationResult is Record<string, TypeValidationException> => Object.keys(validationResult).length !== 0;
+      for (const [type, variables, validationFn] of paramValidators) {
+        errors = [];
+
+        for (const route of routesToCheck) {
+          const validationResult = validationFn(route);
+          if (hasErrors(validationResult)) {
+            errors = [
+              ...errors,
+              { route, paramErrors: validationResult}
+            ];
+            routesToCheck = routesToCheck.filter(r => r !== route);
+          }
+        }
+
+        if (routesToCheck.length === 0) {
+          return Either.Left(new InvalidParamException(type, data.rawPath, variables, errors));
+        }
+
+        if (routesToCheck.length === 1) {
+          return Either.Right(routesToCheck[0]);
+        }
+      }
+
+      return Either.Left(new MultipleRoutesMatchException(routesToCheck, data.method, data.rawPath));
     }
 
     const pathSegment = data.pathSegments[data.pathSegmentIndex];
-    data.pathSegmentIndex++;
+    data = {
+      ...data,
+      pathSegmentIndex: data.pathSegmentIndex + 1,
+    };
 
     if (pathSegment === '') {
       return this.parseRouteSegment(data);
@@ -102,7 +183,10 @@ export class RoutingSegment {
         for (const postfix of this.paramsPathsPostfixKeysSorted[prefix]) {
           if (pathSegment.length > prefix.length + postfix.length && pathSegment.endsWith(postfix)) {
             const param = pathSegment.substring(prefix.length, pathSegment.length - postfix.length);
-            data.pathVariables.push(param);
+            data = {
+              ...data,
+              pathVariables: [...data.pathVariables, param],
+            };
 
             return this.paramsPathsTable[prefix][postfix].parseRouteSegment(data);
           }
@@ -117,51 +201,60 @@ export class RoutingSegment {
    * Add a handler for the next route segment.
    */
   public addRouteSegment(
-    method: string,
-    path: string,
     pathSegments: string[],
-    handler: Handler,
-    ignoreCase: boolean
+    route: GenericRoute
   ): Either<MalformedPathException | DuplicateRouteException, undefined> {
+    const path = route.path;
+
     const [pathSegment, ...nextPathSegments] = pathSegments;
 
-    const startParam = pathSegment.indexOf('{');
-    const endParam = pathSegment.lastIndexOf('}');
+    const startParam = pathSegment.search(regExpNonEscapedLeftBracket);
+    const endParam = regexLastIndexOf(pathSegment, regExpNonEscapedRightBracket);
 
     let next: RoutingSegment;
     if (startParam < 0 && endParam < 0) {
       //there is no parameter in this segment
-      next = this.addLiteralRouteSegment(pathSegment, ignoreCase);
-    } else if ((startParam >= 0 && endParam < 0) || (startParam < 0 && endParam >= 0)) {
-      //there is a '{' but not a '}' or vise versa
-      return Either.Left(new MalformedPathException(path, pathSegment));
+      next = this.addLiteralRouteSegment(pathSegment);
+    } else if (startParam >= 0 && endParam < 0) {
+      return Either.Left(
+        new MalformedPathException(
+          "there is a '{' but not a '}'. Consider escaping the bracket by replacing '{' with '\\{'",
+          path,
+          pathSegment
+        )
+      );
+    } else if (startParam < 0 && endParam >= 0) {
+      return Either.Left(
+        new MalformedPathException(
+          "there is a '}' but not a '{'. Consider escaping the bracket by replacing '}' with '\\}'",
+          path,
+          pathSegment
+        )
+      );
+    } else if (pathSegment.split(regExpNonEscapedLeftBracket).length !== 1) {
+      return Either.Left(
+        new MalformedPathException('each path segment may only contain one parameter.', path, pathSegment)
+      );
     } else {
       //contains a parameter
-      const paramName = pathSegment.substring(startParam + 1, endParam);
-      if (paramName.indexOf('{') >= 0 || paramName.indexOf('}') >= 0) {
-        //contains multiple parameters
-        return Either.Left(new MalformedPathException(path, pathSegment));
-      }
       const prefix = pathSegment.substring(0, startParam);
       const postfix = pathSegment.substr(endParam + 1);
-      next = this.addPathRouteSegment(prefix, postfix, ignoreCase);
+      next = this.addPathRouteSegment(prefix, postfix);
     }
     if (nextPathSegments.length > 0) {
-      return next.addRouteSegment(method, path, nextPathSegments, handler, ignoreCase);
+      return next.addRouteSegment(nextPathSegments, route);
     }
-    return next.addHandler(method, handler);
+    return next.addRoute(route);
   }
 
   /**
    * Get or create a `RoutingSegment` object for the given `pathSegment` literal.
    */
-  private addLiteralRouteSegment(pathSegment: string, ignoreCase: boolean): RoutingSegment {
-    if (ignoreCase) {
-      pathSegment = pathSegment.toLowerCase();
-    }
+  private addLiteralRouteSegment(pathSegment: string): RoutingSegment {
+    pathSegment = this.normalizePathLiteral(pathSegment);
 
     if (this.literalPathsTable[pathSegment] === undefined) {
-      this.literalPathsTable[pathSegment] = new RoutingSegment();
+      this.literalPathsTable[pathSegment] = new RoutingSegment(this.options);
       this.keysExtracted = false;
     }
     return this.literalPathsTable[pathSegment];
@@ -170,11 +263,9 @@ export class RoutingSegment {
   /**
    * Get or create a `RoutingSegment` object for the given parameter objects.
    */
-  private addPathRouteSegment(prefix: string, postfix: string, ignoreCase: boolean): RoutingSegment {
-    if (ignoreCase) {
-      prefix = prefix.toLowerCase();
-      postfix = postfix.toLowerCase();
-    }
+  protected addPathRouteSegment(prefix: string, postfix: string): RoutingSegment {
+    prefix = this.normalizePathLiteral(prefix);
+    postfix = this.normalizePathLiteral(postfix);
 
     if (this.paramsPathsTable[prefix] === undefined) {
       this.paramsPathsTable[prefix] = {};
@@ -182,21 +273,56 @@ export class RoutingSegment {
     }
 
     if (this.paramsPathsTable[prefix][postfix] === undefined) {
-      this.paramsPathsTable[prefix][postfix] = new RoutingSegment();
+      this.paramsPathsTable[prefix][postfix] = new RoutingSegment(this.options);
       this.keysExtracted = false;
     }
 
     return this.paramsPathsTable[prefix][postfix];
   }
 
+  protected normalizePathLiteral(pathSegment: string): string {
+    if (this.options.ignoreCase) {
+      pathSegment = pathSegment.toLowerCase();
+    }
+
+    return pathSegment.replace(regExpNonEscapedLeftBracket, '{').replace(regExpNonEscapedRightBracket, '}');
+  }
+
   /**
    * Add a handler to this `RoutingSegment` object.
    */
-  public addHandler(method: string, handler: Handler): Either<DuplicateRouteException, undefined> {
-    if (this.handlers[method] !== undefined) {
-      return Either.Left(new DuplicateRouteException()); //TODO
+  public addRoute(route: GenericRoute): Either<DuplicateRouteException, undefined> {
+    const method = route.method;
+
+    if (this.methodMap[method] === undefined || this.methodMap[method].length === 0) {
+      this.methodMap[method] = [route];
+      return Either.Right(undefined);
     }
-    this.handlers[method] = handler;
-    return Either.Right(undefined);
+
+    let duplicateFound: false | GenericRoute = false;
+    if (route.pathParams.length === 0) {
+      //is literal path (without parameters)
+      duplicateFound = this.methodMap[method][0];
+    } else {
+      //check for duplicate param types
+      const pathParamTypes = route.pathParams.map(param => route.pathParamTypes[param]);
+      pathParamTypesLoop: for (let index = 0; index < pathParamTypes.length; index++) {
+        const type = pathParamTypes[index];
+        for (const otherRoute of this.methodMap[method]) {
+          const comparisonType = otherRoute[otherRoute.pathParams[index]];
+          if (type === comparisonType) {
+            duplicateFound = otherRoute;
+            break pathParamTypesLoop;
+          }
+        }
+      }
+    }
+
+    if (duplicateFound === false) {
+      this.methodMap[method] = [...this.methodMap[method], route];
+      return Either.Right(undefined);
+    }
+
+    return Either.Left(new DuplicateRouteException(route, duplicateFound));
   }
 }
