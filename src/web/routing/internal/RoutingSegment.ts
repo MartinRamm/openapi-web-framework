@@ -4,7 +4,7 @@ import { Either } from 'src/fp/Either';
 import { NoRouteFoundException } from 'src/errors/routing/NoRouteFoundException';
 import { MethodNotAllowedException } from 'src/errors/routing/MethodNotAllowedException';
 import { MalformedPathException } from 'src/errors/routing/MalformedPathException';
-import { DuplicateRouteException } from 'src/errors/routing/DuplicateRouteException';
+import { UndifferentiableRouteException } from 'src/errors/routing/UndifferentiableRouteException';
 import { ParseRouteSegmentData } from 'src/web/routing/internal/ParseRouteSegmentData';
 import { ParseRouteReturnType } from 'src/web/routing/internal/ParseRouteReturnType';
 import { RoutingOptions } from 'src/web/routing/RoutingOptions';
@@ -103,10 +103,7 @@ export class RoutingSegment {
           const validationResult = type.validateValue(variableValue);
 
           if (validationResult.isLeft()) {
-            errors = [
-              ...errors,
-              { route, paramErrors: {[pathParamName]: validationResult.value}}
-            ];
+            errors = [...errors, { route, paramErrors: { [pathParamName]: validationResult.value } }];
             routesToCheck = routesToCheck.filter(r => r !== route);
           }
         }
@@ -121,31 +118,38 @@ export class RoutingSegment {
         return Either.Right(routesToCheck[0]);
       }
 
-      type ParamValidator<T extends string> = ['query' | 'headers' | 'cookies' | 'body', Record<T, string>, (r: GenericRoute) => Partial<Record<T, TypeValidationException>>];
+      type ParamValidator<T extends string> = [
+        'query' | 'headers' | 'cookies' | 'body',
+        Record<T, string>,
+        (r: GenericRoute) => Partial<Record<T, TypeValidationException>>
+      ];
       const paramValidators: Array<ParamValidator<string>> = [
         ['query', data.query, (r: GenericRoute) => r.queryMatchErrors(data.query)],
         ['headers', data.headers, (r: GenericRoute) => r.headersMatchErrors(data.headers)],
         ['cookies', data.cookies, (r: GenericRoute) => r.cookiesMatchErrors(data.cookies)],
-        ['body', {body: data.rawBody}, (r: GenericRoute) => {
-          if (r.requiresBody && data.rawBody === '') {
-            return {body: new TypeValidationException('body', 'non-empty string')};
-          } else if (!r.requiresBody && data.rawBody !== '') {
-            return {body: new TypeValidationException('body', 'empty')};
-          }
-          return {};
-        } ],
+        [
+          'body',
+          { body: data.rawBody },
+          (r: GenericRoute) => {
+            if (r.requiresBody && data.rawBody === '') {
+              return { body: new TypeValidationException('body', 'non-empty string') };
+            } else if (!r.requiresBody && data.rawBody !== '') {
+              return { body: new TypeValidationException('body', 'empty') };
+            }
+            return {};
+          },
+        ],
       ];
-      const hasErrors = (validationResult: Partial<Record<string, TypeValidationException>>): validationResult is Record<string, TypeValidationException> => Object.keys(validationResult).length !== 0;
+      const hasErrors = (
+        validationResult: Partial<Record<string, TypeValidationException>>
+      ): validationResult is Record<string, TypeValidationException> => Object.keys(validationResult).length !== 0;
       for (const [type, variables, validationFn] of paramValidators) {
         errors = [];
 
         for (const route of routesToCheck) {
           const validationResult = validationFn(route);
           if (hasErrors(validationResult)) {
-            errors = [
-              ...errors,
-              { route, paramErrors: validationResult}
-            ];
+            errors = [...errors, { route, paramErrors: validationResult }];
             routesToCheck = routesToCheck.filter(r => r !== route);
           }
         }
@@ -203,7 +207,7 @@ export class RoutingSegment {
   public addRouteSegment(
     pathSegments: string[],
     route: GenericRoute
-  ): Either<MalformedPathException | DuplicateRouteException, undefined> {
+  ): Either<MalformedPathException | UndifferentiableRouteException, undefined> {
     const path = route.path;
 
     const [pathSegment, ...nextPathSegments] = pathSegments;
@@ -291,7 +295,7 @@ export class RoutingSegment {
   /**
    * Add a handler to this `RoutingSegment` object.
    */
-  public addRoute(route: GenericRoute): Either<DuplicateRouteException, undefined> {
+  public addRoute(route: GenericRoute): Either<UndifferentiableRouteException, undefined> {
     const method = route.method;
 
     if (this.methodMap[method] === undefined || this.methodMap[method].length === 0) {
@@ -299,30 +303,13 @@ export class RoutingSegment {
       return Either.Right(undefined);
     }
 
-    let duplicateFound: false | GenericRoute = false;
-    if (route.pathParams.length === 0) {
-      //is literal path (without parameters)
-      duplicateFound = this.methodMap[method][0];
-    } else {
-      //check for duplicate param types
-      const pathParamTypes = route.pathParams.map(param => route.pathParamTypes[param]);
-      pathParamTypesLoop: for (let index = 0; index < pathParamTypes.length; index++) {
-        const type = pathParamTypes[index];
-        for (const otherRoute of this.methodMap[method]) {
-          const comparisonType = otherRoute[otherRoute.pathParams[index]];
-          if (type === comparisonType) {
-            duplicateFound = otherRoute;
-            break pathParamTypesLoop;
-          }
-        }
+    for (const otherRoute of this.methodMap[method]) {
+      if (!route.isDifferentiableFrom(otherRoute)) {
+        return Either.Left(new UndifferentiableRouteException(route, otherRoute))
       }
     }
 
-    if (duplicateFound === false) {
-      this.methodMap[method] = [...this.methodMap[method], route];
-      return Either.Right(undefined);
-    }
-
-    return Either.Left(new DuplicateRouteException(route, duplicateFound));
+    this.methodMap[method] = [...this.methodMap[method], route];
+    return Either.Right(undefined);
   }
 }

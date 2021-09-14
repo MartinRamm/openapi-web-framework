@@ -7,6 +7,10 @@ import { InvalidParamException } from 'src/errors/routing/InvalidParamException'
 import { MultipleRoutesMatchException } from 'src/errors/routing/MultipleRoutesMatchException';
 
 export type ParseRouteReturnType = Either<
-  MalformedUrlException | NoRouteFoundException | MethodNotAllowedException | InvalidParamException | MultipleRoutesMatchException,
+  | MalformedUrlException
+  | NoRouteFoundException
+  | MethodNotAllowedException
+  | InvalidParamException
+  | MultipleRoutesMatchException,
   GenericRoute
 >;

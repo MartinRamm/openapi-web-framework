@@ -4,5 +4,5 @@ import { SchemaToTypescriptType } from 'src/models/schema/to-typescript/SchemaTo
 
 export abstract class AbstractValueSerializer<
   Spec extends SchemaSpecification,
-  Schema extends SchemaClass<Spec, any> //eslint-disable-line @typescript-eslint/no-explicit-any
+  Schema extends SchemaClass<Spec, any>
 > extends AbstractSerializer<SchemaToTypescriptType<Schema>> {}

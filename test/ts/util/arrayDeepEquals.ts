@@ -9,11 +9,6 @@ arrayDeepEqualsPrimative([1, '2', 3], [1, '2', 3]);
 arrayDeepEqualsPrimative([1, '2', {}], [1, '2', {}]);
 // @ts-expect-error
 arrayDeepEquals([1, '2', {}], [1, '2', {}]);
-arrayDeepEquals(
-  [1, '2', {}],
-  [1, '2', {}],
-  (a, b) =>
-    (typeof a === 'object' && typeof b === 'object')
-      ? arrayDeepEqualsPrimative(Object.keys(a), Object.keys(b))
-      : a === b
+arrayDeepEquals([1, '2', {}], [1, '2', {}], (a, b) =>
+  typeof a === 'object' && typeof b === 'object' ? arrayDeepEqualsPrimative(Object.keys(a), Object.keys(b)) : a === b
 );

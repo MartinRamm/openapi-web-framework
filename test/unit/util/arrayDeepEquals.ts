@@ -10,8 +10,8 @@ const compareFnTestObj = (a: TestObj, b: TestObj) => a.value === b.value;
 describe('arrayDeepEquals', () => {
   describe('positive test cases', () => {
     test('primative', () => {
-      const a = [1,2,3];
-      const b = [1,2,3];
+      const a = [1, 2, 3];
+      const b = [1, 2, 3];
 
       const actual = arrayDeepEqualsPrimative(a, b);
       expect(actual).toStrictEqual(true);
@@ -28,8 +28,8 @@ describe('arrayDeepEquals', () => {
 
   describe('order matters', () => {
     test('primative', () => {
-      const a = [1,2,3];
-      const b = [3,2,1];
+      const a = [1, 2, 3];
+      const b = [3, 2, 1];
 
       const actual = arrayDeepEqualsPrimative(a, b);
       expect(actual).toStrictEqual(false);
@@ -46,8 +46,8 @@ describe('arrayDeepEquals', () => {
 
   describe('different length', () => {
     describe('primative', () => {
-      const a = [1,2,3];
-      const b = [1,2];
+      const a = [1, 2, 3];
+      const b = [1, 2];
 
       const testCases: Array<[string, number[], number[]]> = [
         ['long short', a, b],

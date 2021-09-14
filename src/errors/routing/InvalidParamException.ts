@@ -9,7 +9,7 @@ const description = {
   headers: '',
   cookies: '',
   body: '',
-}
+};
 
 export class InvalidParamException extends Error {
   constructor(
@@ -18,6 +18,10 @@ export class InvalidParamException extends Error {
     public readonly variableValue: string | Record<string, string>,
     public readonly unmatchedParamTypes: UnmatchedParamTypes
   ) {
-    super(`Bad Request: "${path}" contains invalid ${type}${description[type]}${typeof variableValue === 'string' ? ': "' + variableValue + '"' : ''}`);
+    super(
+      `Bad Request: "${path}" contains invalid ${type}${description[type]}${
+        typeof variableValue === 'string' ? ': "' + variableValue + '"' : ''
+      }`
+    );
   }
 }

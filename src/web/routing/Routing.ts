@@ -17,7 +17,14 @@ export class Routing {
   /**
    * Parse route for an incoming request.
    */
-  public parseRoute(method: string, rawPath: string, rawBody: string, query: Record<string, string>, headers: Record<string, string>, cookies: Record<string, string>): ParseRouteReturnType {
+  public parseRoute(
+    method: string,
+    rawPath: string,
+    rawBody: string,
+    query: Record<string, string>,
+    headers: Record<string, string>,
+    cookies: Record<string, string>
+  ): ParseRouteReturnType {
     //decode encoded characters
     let path = rawPath.replace(/%2f/gi, '\\/');
     try {

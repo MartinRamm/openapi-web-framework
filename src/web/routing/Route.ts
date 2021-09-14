@@ -1,27 +1,28 @@
 import { Handler } from 'src/web/Handler';
 import { GetPathParamsType } from 'src/web/routing/internal/GetPathParamsType';
-import { AbstractType } from 'src/models/type/internal/AbstractType';
+import { GenericType } from 'src/models/type/internal/AbstractType';
 import { getPathParams } from 'src/web/routing/internal/getPathParams';
 import { TypeValidationException } from 'src/errors/TypeValidationException';
 import { getPathWithoutParamNames } from 'src/web/routing/internal/getPathWithoutParamNames';
 import { arrayDeepEquals, arrayDeepEqualsPrimative } from 'src/util/arrayDeepEquals';
+import { ioContexts } from 'src/models/serialize/ioContext';
 
 //Replacement for Route<any, any>, which causes the property `pathParamTypes` to be untyped
 export type GenericRoute = Route<
   string,
-  Record<string, AbstractType<any, any>>, //eslint-disable-line @typescript-eslint/no-explicit-any
-  Record<string, AbstractType<any, any>>, //eslint-disable-line @typescript-eslint/no-explicit-any
-  Record<string, AbstractType<any, any>>, //eslint-disable-line @typescript-eslint/no-explicit-any
-  Record<string, AbstractType<any, any>>, //eslint-disable-line @typescript-eslint/no-explicit-any
+  Record<string, GenericType>,
+  Record<string, GenericType>,
+  Record<string, GenericType>,
+  Record<string, GenericType>,
   boolean
 >;
 
 export class Route<
   Path extends string,
-  PathParamTypes extends Record<GetPathParamsType<Path>, AbstractType<any, any>>, //eslint-disable-line @typescript-eslint/no-explicit-any
-  QueryTypes extends Record<string, AbstractType<any, any>>, //eslint-disable-line @typescript-eslint/no-explicit-any
-  HeaderTypes extends Record<string, AbstractType<any, any>>, //eslint-disable-line @typescript-eslint/no-explicit-any
-  CookieTypes extends Record<string, AbstractType<any, any>>, //eslint-disable-line @typescript-eslint/no-explicit-any
+  PathParamTypes extends Record<GetPathParamsType<Path>, GenericType>,
+  QueryTypes extends Record<string, GenericType>,
+  HeaderTypes extends Record<string, GenericType>,
+  CookieTypes extends Record<string, GenericType>,
   RequiresBody extends boolean
 > {
   public readonly pathParams: Array<GetPathParamsType<Path>>;
@@ -57,7 +58,7 @@ export class Route<
     return this.matches(this.cookieTypes, cookie);
   }
 
-  protected matches<T extends Record<string, AbstractType<any, any>>>(types: T, check: Record<string, string>) {
+  protected matches<T extends Record<string, GenericType>>(types: T, check: Record<string, string>) {
     let validationErrors: Partial<Record<keyof T, TypeValidationException>> = {};
     for (const key of Object.keys(types)) {
       const type = types[key];
@@ -66,7 +67,7 @@ export class Route<
       if (validateResult.isLeft()) {
         validationErrors = {
           ...validationErrors,
-          [key]: validateResult.value
+          [key]: validateResult.value,
         };
       }
     }
@@ -74,20 +75,23 @@ export class Route<
   }
 
   public isDifferentiableFrom(otherRoute: GenericRoute): boolean {
-    const compare = (a: Record<string, AbstractType<any, any>>, b: Record<string, AbstractType<any, any>>) =>
-      arrayDeepEqualsPrimative(Object.keys(a), Object.keys(b))
-        && arrayDeepEquals(
-          Object.values(a),
-          Object.values(b),
-          (a: AbstractType<any, any>, b: AbstractType<any, any>) => a === b ? false : a.isDifferentiableFrom(b)
+    const compareValues = (a: Record<string, GenericType>, b: Record<string, GenericType>) =>
+      arrayDeepEquals(
+        Object.values(a),
+        Object.values(b),
+        (a: GenericType, b: GenericType) => a.isDifferentiableFrom(b, ioContexts.path)
       );
+    const compareWithKeys = (a: Record<string, GenericType>, b: Record<string, GenericType>) =>
+      arrayDeepEqualsPrimative(Object.keys(a), Object.keys(b)) && compareValues(a, b);
 
-    return this.method !== otherRoute.method
-      || this.pathWithoutParamNames !== otherRoute.pathWithoutParamNames
-      || this.requiresBody !== otherRoute.requiresBody
-      || !compare(this.pathParamTypes, otherRoute.pathParamTypes)
-      || !compare(this.queryTypes, otherRoute.queryTypes)
-      || !compare(this.headerTypes, otherRoute.headerTypes)
-      || !compare(this.cookieTypes, otherRoute.cookieTypes);
+    return (
+      this.method !== otherRoute.method ||
+      this.pathWithoutParamNames !== otherRoute.pathWithoutParamNames ||
+      this.requiresBody !== otherRoute.requiresBody ||
+      !compareValues(this.pathParamTypes, otherRoute.pathParamTypes) ||
+      !compareWithKeys(this.queryTypes, otherRoute.queryTypes) ||
+      !compareWithKeys(this.headerTypes, otherRoute.headerTypes) ||
+      !compareWithKeys(this.cookieTypes, otherRoute.cookieTypes)
+    );
   }
 }

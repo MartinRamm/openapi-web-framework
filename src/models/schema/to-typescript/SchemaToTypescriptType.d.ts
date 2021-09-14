@@ -5,4 +5,4 @@ import { ConvertSchema } from 'src/models/schema/to-typescript/internal/ConvertS
  * @See src/models/schema/Schema;
  */
 
-export type SchemaToTypescriptType<S extends Schema<any, any>> = ConvertSchema<S, 'optional'>; // eslint-disable-line @typescript-eslint/no-explicit-any
+export type SchemaToTypescriptType<S extends Schema<any, any>> = ConvertSchema<S, 'optional'>;

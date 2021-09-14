@@ -80,7 +80,7 @@ module.exports = {
       {
         selector: 'parameter',
         format: ['camelCase'],
-        leadingUnderscore: 'forbid',
+        leadingUnderscore: 'allow', //to skip "unused parameter" ts error
         trailingUnderscore: 'forbid',
       },
 

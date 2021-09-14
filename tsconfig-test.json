@@ -9,5 +9,5 @@
       "test/*": ["./test/*"]
     }
   },
-  "include": ["test/**/*.ts", "test/**/*.js", "test/**/.*.js", "*.js", "*.js", ".*.js"]
+  "include": ["test/**/*.ts", "test/**/*.js", "test/**/.*.js", "src/**/.*.js", "*.ts", "*.js", ".*.js"]
 }

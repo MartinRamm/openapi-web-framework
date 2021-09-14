@@ -1,7 +1,7 @@
 import { NumberMetadata } from 'src/models/type/internal/Metadata';
-import { Range } from 'src/models/type/internal/typeCategory/Range';
+import { Range } from 'src/models/type/internal/type-category/Range';
 
-export class NumberRange extends Range{
+export class NumberRange extends Range {
   constructor(metadata: NumberMetadata) {
     let min = -Infinity;
     if ('minimum' in metadata) {

@@ -13,13 +13,7 @@ const isOptionsLeftRight = <Left, Right, Return>(
  * This is used instead of throwing errors, because errors can't be typed in TS.
  */
 export abstract class Either<Left, Right> {
-  protected readonly type: 'L' | 'R';
-  public readonly value: Left | Right;
-
-  protected constructor(type: 'L' | 'R', value: Left | Right) {
-    this.type = type;
-    this.value = value;
-  }
+  protected constructor(protected readonly type: 'L' | 'R', public readonly value: Left | Right) {}
 
   public static Left<Left, Right>(value: Left): Either<Left, Right> {
     return new EitherLeft(value);
@@ -29,9 +23,9 @@ export abstract class Either<Left, Right> {
     return new EitherRight(value);
   }
 
-  public abstract isLeft(): this is { value: Left };
+  public abstract isLeft(): this is Either<Left, Left>;
 
-  public isRight(): this is { value: Right } {
+  public isRight(): this is Either<Right, Right> {
     return !this.isLeft();
   }
 
@@ -70,7 +64,7 @@ class EitherLeft<Left, Right> extends Either<Left, Right> {
    * @inheritDoc
    * @override
    */
-  public isLeft(): this is { value: Left } {
+  public isLeft(): this is Either<Left, Left> {
     return true;
   }
 }
@@ -84,7 +78,7 @@ class EitherRight<Left, Right> extends Either<Left, Right> {
    * @inheritDoc
    * @override
    */
-  public isLeft(): this is { value: Left } {
+  public isLeft(): this is Either<Left, Left> {
     return false;
   }
 }

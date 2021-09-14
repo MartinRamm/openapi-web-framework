@@ -1,7 +1,7 @@
 import { ArrayMetadata } from 'src/models/type/internal/Metadata';
-import { Range } from 'src/models/type/internal/typeCategory/Range';
+import { Range } from 'src/models/type/internal/type-category/Range';
 
-export class ArrayRange extends Range{
+export class ArrayRange extends Range {
   constructor(metadata: ArrayMetadata) {
     let min = -Infinity;
     if ('minItems' in metadata) {

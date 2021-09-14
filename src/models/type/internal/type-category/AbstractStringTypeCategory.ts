@@ -1,11 +1,11 @@
-import { AbstractTypeCategory } from 'src/models/type/internal/typeCategory/AbstractTypeCategory';
+import { AbstractTypeCategory } from 'src/models/type/internal/type-category/AbstractTypeCategory';
 import { StringMetadata } from 'src/models/type/internal/Metadata';
 import { AbstractType } from 'src/models/type/internal/AbstractType';
-import { StringRange } from 'src/models/type/internal/typeCategory/StringRange';
+import { StringRange } from 'src/models/type/internal/type-category/StringRange';
 
-export abstract class AbstractStringTypeCategory
-<SubCategoryMetadata extends StringMetadata>
-extends AbstractTypeCategory<StringMetadata, SubCategoryMetadata> {
+export abstract class AbstractStringTypeCategory<
+  SubCategoryMetadata extends StringMetadata
+> extends AbstractTypeCategory<StringMetadata, SubCategoryMetadata> {
   protected constructor(subCategory: string) {
     super('string', subCategory);
   }

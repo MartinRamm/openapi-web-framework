@@ -1,10 +1,9 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Schema, SchemaSpecification } from 'src/models/schema/Schema';
 import { AbstractType } from 'src/models/type/internal/AbstractType';
 import { Evaluate } from 'src/types/Evaluate';
 import { AreAllPropertiesOptional } from 'src/types/AreAllPropertiesOptional';
 import { IsEmptyObject } from 'src/types/IsEmptyObject';
-import { Metadata as MetadataInterface, TypedObjectMetadata } from 'src/models/type/internal/Metadata';
+import { Metadata as MetadataInterface, ObjectMetadata } from 'src/models/type/internal/Metadata';
 
 type AllowAdditionalProperties = { [key: string]: unknown };
 
@@ -16,7 +15,7 @@ type IsMetadataOfReadonlyOrWriteonlyType<Metadata extends MetadataInterface> = '
   ? true
   : false;
 
-type HasAdditionalProperties<T extends TypedObjectMetadata> = 'additionalProperties' extends keyof T //if this property is present, it is always true
+type HasAdditionalProperties<T extends ObjectMetadata> = 'additionalProperties' extends keyof T //if this property is present, it is always true
   ? true
   : false;
 

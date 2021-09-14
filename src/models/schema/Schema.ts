@@ -1,11 +1,11 @@
-import { AbstractType } from 'src/models/type/internal/AbstractType';
-import { TypedObjectMetadata } from 'src/models/type/internal/Metadata';
+import { GenericType } from 'src/models/type/internal/AbstractType';
+import { ObjectMetadata } from 'src/models/type/internal/Metadata';
 
 export type SchemaSpecification = {
-  [key: string]: AbstractType<any, any> | SchemaSpecification | Schema<any, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
+  [key: string]: GenericType | SchemaSpecification | Schema<any, any>;
 };
 
-export class Schema<Spec extends SchemaSpecification, Metadata extends TypedObjectMetadata> {
+export class Schema<Spec extends SchemaSpecification, Metadata extends ObjectMetadata> {
   public readonly schema: Spec;
   public readonly metadata: Metadata;
 

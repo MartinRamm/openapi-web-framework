@@ -1,7 +1,7 @@
 import { AbstractType } from 'src/models/type/internal/AbstractType';
 import { NumberMetadata } from 'src/models/type/internal/Metadata';
-import { AbstractTypeCategory } from 'src/models/type/internal/typeCategory/AbstractTypeCategory';
-import { NumberRange } from 'src/models/type/internal/typeCategory/NumberRange';
+import { AbstractTypeCategory } from 'src/models/type/internal/type-category/AbstractTypeCategory';
+import { NumberRange } from 'src/models/type/internal/type-category/NumberRange';
 
 export abstract class AbstractNumberTypeCategory extends AbstractTypeCategory<NumberMetadata, NumberMetadata> {
   protected constructor(subCategory: string) {

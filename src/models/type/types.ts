@@ -45,6 +45,5 @@ export const types = {
   },
   any: {},
   oneOf: {}, //metadata: discriminator (https://swagger.io/docs/specification/data-models/inheritance-and-polymorphism/)
-  not: {},
-  asNullable: {},
+  not: {}, //check that it does not contain oneOf or not!!
 };

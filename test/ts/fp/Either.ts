@@ -154,3 +154,13 @@ expectTypeOf(
     },
   })
 ).toBeVoid();
+
+const either = createEither(left);
+if (either.isLeft()) {
+  expectTypeOf(either.value).toEqualTypeOf<typeof left>();
+  expectTypeOf(either.value).not.toEqualTypeOf<typeof right>();
+}
+if (either.isRight()) {
+  expectTypeOf(either.value).toEqualTypeOf<typeof right>();
+  expectTypeOf(either.value).not.toEqualTypeOf<typeof left>();
+}
